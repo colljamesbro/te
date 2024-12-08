@@ -1,0 +1,46 @@
+-- Initialize variables
+local player = game.Players.LocalPlayer
+local spawnPoint = nil -- This will store the spawn point
+local thresholdDistance = 50 -- Distance threshold to detect teleport
+
+-- Function to set the spawn point
+local function setSpawnPoint()
+    if player.Character and player.Character.PrimaryPart then
+        spawnPoint = player.Character.PrimaryPart.Position
+        print("Spawn point set at: " .. tostring(spawnPoint))
+    else
+        warn("Character not ready to set spawn point.")
+    end
+end
+
+-- Function to check if the player has teleported
+local function checkTeleport()
+    while true do
+        task.wait(0.1) -- Check every 0.1 seconds
+
+        if spawnPoint and player.Character and player.Character.PrimaryPart then
+            local currentPosition = player.Character.PrimaryPart.Position
+            local distance = (currentPosition - spawnPoint).Magnitude
+
+            if distance > thresholdDistance then
+                -- Teleport back to spawn point
+                player.Character:SetPrimaryPartCFrame(CFrame.new(spawnPoint))
+                print("Teleported back to spawn point!")
+            end
+        end
+    end
+end
+
+-- Listen for key presses to set the spawn point
+local UserInputService = game:GetService("UserInputService")
+
+UserInputService.InputBegan:Connect(function(input, isProcessed)
+    if isProcessed then return end -- Ignore processed inputs
+
+    if input.KeyCode == Enum.KeyCode.LeftControl or input.KeyCode == Enum.KeyCode.RightControl then
+        setSpawnPoint()
+    end
+end)
+
+-- Start monitoring teleportation
+task.spawn(checkTeleport)
